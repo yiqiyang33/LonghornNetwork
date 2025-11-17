@@ -1,8 +1,17 @@
 import java.util.*;
 import java.util.concurrent.*;
 
-// Main.java - Self-contained testing & grading with multiple built‑in test cases.
+/**
+ * Entry point for the Longhorn Network autograder harness that bundles
+ * predefined scenarios and exercises every component.
+ */
 public class Main {
+
+    /**
+     * Runs the bundled scenarios and aggregates their scores.
+     *
+     * @param args unused command-line arguments
+     */
     public static void main(String[] args) {
         // Create a list of test cases.
         List<List<UniversityStudent>> testCases = new ArrayList<>();
@@ -33,6 +42,11 @@ public class Main {
     }
 
     // Test Case 1: Two groups (Group 1 with four students having mutual preferences, Group 2 with a pair)
+    /**
+     * Constructs a data set with two disjoint groups and rich preference lists.
+     *
+     * @return students participating in the first scenario
+     */
     public static List<UniversityStudent> generateTestCase1() {
         List<UniversityStudent> students = new ArrayList<>();
 
@@ -69,6 +83,11 @@ public class Main {
 
     // Test Case 2: Three students in which one has "DummyCompany" as a previous internship.
     // This test case should yield a referral path when searching for "DummyCompany".
+    /**
+     * Builds a scenario with a clearly discoverable referral path.
+     *
+     * @return students used for referral-path validation
+     */
     public static List<UniversityStudent> generateTestCase2() {
         List<UniversityStudent> students = new ArrayList<>();
 
@@ -90,6 +109,11 @@ public class Main {
 
     // Test Case 3: Three students where one has no roommate preferences.
     // Two of them can be paired and one remains unpaired.
+    /**
+     * Generates a scenario with incomplete roommate preference data.
+     *
+     * @return students comprising the third scenario
+     */
     public static List<UniversityStudent> generateTestCase3() {
         List<UniversityStudent> students = new ArrayList<>();
 
@@ -113,6 +137,10 @@ public class Main {
      * Automated test suite for grading a given test case.
      * Accepts a list of UniversityStudent objects and a testCaseNumber (for output clarity).
      * Returns an integer score.
+     *
+     * @param students        data set under evaluation
+     * @param testCaseNumber  ordinal identifying the test case in logs
+     * @return total score accumulated for the provided test case
      */
     public static int gradeLab(List<UniversityStudent> students, int testCaseNumber) {
         int score = 0;
@@ -219,4 +247,3 @@ public class Main {
         return score;
     }
 }
-

@@ -1,7 +1,14 @@
+import java.util.concurrent.Semaphore;
+
 /**
  * Runnable that models processing of a friend request event between two students.
  */
 public class FriendRequestThread implements Runnable {
+
+    private static final Semaphore FRIEND_REQUEST_SEMAPHORE = new Semaphore(1);
+
+    private final UniversityStudent sender;
+    private final UniversityStudent receiver;
 
     /**
      * Creates a friend request action initiated by one student toward another.
@@ -10,7 +17,8 @@ public class FriendRequestThread implements Runnable {
      * @param receiver intended recipient of the request
      */
     public FriendRequestThread(UniversityStudent sender, UniversityStudent receiver) {
-        // Constructor
+        this.sender = sender;
+        this.receiver = receiver;
     }
 
     /**
@@ -18,6 +26,22 @@ public class FriendRequestThread implements Runnable {
      */
     @Override
     public void run() {
-        // Method signature only
+        if (sender == null || receiver == null) {
+            return;
+        }
+        boolean acquired = false;
+        try {
+            FRIEND_REQUEST_SEMAPHORE.acquire();
+            acquired = true;
+            sender.establishFriendship(receiver);
+            System.out.println("FriendRequestThread: " + sender.getName()
+                    + " sent a friend request to " + receiver.getName());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            if (acquired) {
+                FRIEND_REQUEST_SEMAPHORE.release();
+            }
+        }
     }
 }

@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -7,12 +8,21 @@ import java.util.concurrent.*;
  */
 public class Main {
 
+    private static final String POD_SAMPLE_FILE = "testing/testingcheckpointtwo/pod_sample.txt";
+    private static final String REFERRAL_SAMPLE_FILE = "testing/testingcheckpointtwo/referral_path_sample.txt";
+    private static final String ROOMMATE_SAMPLE_FILE = "testing/testingcheckpointtwo/roommate_sample.txt";
+
     /**
      * Runs the bundled scenarios and aggregates their scores.
      *
-     * @param args unused command-line arguments
+     * @param args command-line arguments
      */
     public static void main(String[] args) {
+        if (args.length > 0 && args[0].equalsIgnoreCase("ui")) {
+            LonghornNetworkUI.launch();
+            return;
+        }
+
         // Create a list of test cases.
         List<List<UniversityStudent>> testCases = new ArrayList<>();
         testCases.add(generateTestCase1());
@@ -39,6 +49,8 @@ public class Main {
         }
         System.out.println("\n========================================");
         System.out.println("Average Score across all test cases: " + (overallScore / count));
+
+        runCheckpointTwoDemonstrations();
     }
 
     // Test Case 1: Two groups (Group 1 with four students having mutual preferences, Group 2 with a pair)
@@ -245,5 +257,106 @@ public class Main {
 
         System.out.println("\nTotal Score for Test Case " + testCaseNumber + ": " + score);
         return score;
+    }
+
+    private static void runCheckpointTwoDemonstrations() {
+        System.out.println("\n========================================");
+        System.out.println("=== Checkpoint Two Demonstrations ===");
+        System.out.println("========================================");
+        runPodSampleDemo();
+        runReferralSampleDemo();
+        runRoommateSampleDemo();
+    }
+
+    private static void runPodSampleDemo() {
+        System.out.println("\n--- Pod Sample Demo ---");
+        List<UniversityStudent> students = parseStudentsFromFile(POD_SAMPLE_FILE);
+        if (students.isEmpty()) {
+            return;
+        }
+        GaleShapley.assignRoommates(students);
+        System.out.println("Roommate Assignment:");
+        printRoommates(students);
+        StudentGraph graph = new StudentGraph(students);
+        PodFormation podFormation = new PodFormation(graph);
+        podFormation.formPods(Math.max(1, students.size() / 2));
+    }
+
+    private static void runReferralSampleDemo() {
+        System.out.println("\n--- Referral Path Sample Demo ---");
+        List<UniversityStudent> students = parseStudentsFromFile(REFERRAL_SAMPLE_FILE);
+        if (students.isEmpty()) {
+            return;
+        }
+        GaleShapley.assignRoommates(students);
+        System.out.println("Roommate Assignment:");
+        printRoommates(students);
+        StudentGraph graph = new StudentGraph(students);
+        PodFormation podFormation = new PodFormation(graph);
+        podFormation.formPods(Math.max(1, students.size() / 2));
+        ReferralPathFinder pathFinder = new ReferralPathFinder(graph);
+        System.out.println();
+        printReferralResult(pathFinder, graph.getStudent("Issac"), "FindMe");
+        printReferralResult(pathFinder, graph.getStudent("Timmy"), "FindMe");
+        printReferralResult(pathFinder, graph.getStudent("Timmy"), "IDontExist");
+    }
+
+    private static void runRoommateSampleDemo() {
+        System.out.println("\n--- Roommate Sample Demo ---");
+        List<UniversityStudent> students = parseStudentsFromFile(ROOMMATE_SAMPLE_FILE);
+        if (students.isEmpty()) {
+            return;
+        }
+        GaleShapley.assignRoommates(students);
+        System.out.println("Roommate Assignment:");
+        printRoommates(students);
+    }
+
+    private static void printRoommates(List<UniversityStudent> students) {
+        for (UniversityStudent student : students) {
+            UniversityStudent roommate = student.getRoommate();
+            if (roommate == null) {
+                System.out.println(student.getName() + " has no roommate");
+            } else {
+                System.out.println(student.getName() + " is roommates with " + roommate.getName());
+            }
+        }
+    }
+
+    private static void printReferralResult(ReferralPathFinder pathFinder,
+                                            UniversityStudent start,
+                                            String company) {
+        if (start == null) {
+            System.out.println("For Unknown:");
+            System.out.println("Starting student not found.\n");
+            return;
+        }
+        System.out.println("For " + start.getName() + ":");
+        List<UniversityStudent> path = pathFinder.findReferralPath(start, company);
+        if (path.isEmpty()) {
+            System.out.println("No referral path found\n");
+        } else {
+            System.out.println(formatPath(path) + "\n");
+        }
+    }
+
+    private static String formatPath(List<UniversityStudent> path) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < path.size(); i++) {
+            builder.append(path.get(i).getName());
+            if (i < path.size() - 1) {
+                builder.append(" -> ");
+            }
+        }
+        return builder.toString();
+    }
+
+    private static List<UniversityStudent> parseStudentsFromFile(String filename) {
+        try {
+            return DataParser.parseStudents(filename);
+        } catch (IOException e) {
+            System.out.println("Unable to parse file '" + filename + "': " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }
